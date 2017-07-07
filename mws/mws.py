@@ -276,7 +276,7 @@ class Feeds(MWS):
                                  extra_headers={'Content-MD5': md, 'Content-Type': content_type})
 
     def get_feed_submission_list(self, feedids=None, max_count=None, feedtypes=None,
-                                    processingstatuses=None, fromdate=None, todate=None):
+                                 processingstatuses=None, fromdate=None, todate=None):
         """
         Returns a list of all feed submissions submitted in the previous 90 days.
         That match the query parameters.
@@ -550,6 +550,22 @@ class Products(MWS):
                     MarketplaceId=marketplaceid,
                     ItemCondition=condition)
         data.update(self.enumerate_param('ASINList.ASIN.', asins))
+        return self.make_request(data)
+
+    def get_fees_estimate_for_asin(self, marketplaceid, asins, prices, currencies):
+        data = dict(Action='GetMyFeesEstimate')
+        for index in range(len(asins)):
+            request_item_dicts = {'MarketplaceId': marketplaceid,
+                                  'IdType': 'ASIN',
+                                  'IdValue': asins[index],
+                                  'IsAmazonFulfilled': 'true',
+                                  'Identifier': asins[index],
+                                  'PriceToEstimateFees.ListingPrice.Amount': str(prices[index]),
+                                  'PriceToEstimateFees.ListingPrice.CurrencyCode': currencies[index]
+                                  }
+            for key in request_item_dicts.keys():
+                data['FeesEstimateRequestList.FeesEstimateRequest.{}.{}'.format(index+1, key)] = request_item_dicts[key]
+        print (data)
         return self.make_request(data)
 
 
